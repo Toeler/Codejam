@@ -1,4 +1,5 @@
-var challenge = new (require('./codejam')).Challenge();
+var codejam = require('../codejam'),
+	challenge = new codejam.Challenge();
 
 var KEYBOARD = ['abc','def','ghi','jkl','mno','pqrs','tuv','wxyz',' '];
 
