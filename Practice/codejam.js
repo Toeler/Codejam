@@ -181,7 +181,8 @@ var codejam = {};
 				errors.push(String.format('Case #{0}: ERROR: {1}', caseNum, error));
 			}
 			
-			time.elapsed = process.hrtime(time.start)[1] / 1000000;
+			time.elapsed = process.hrtime(time.start);//[1] / 1000000;
+			time.elapsed = (time.elapsed[0] * 1000) + (time.elapsed[1] / 1000000);
 			times[caseNum - 1] = time.elapsed;
 			if (!this.supressConsole) {
 				console.log(String.format('Case #{0}: Took {1}ms', caseNum, time.elapsed.toFixed(3)));
