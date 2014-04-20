@@ -41,7 +41,9 @@ var codejam = {};
 		linesPerCase:	The number of lines from input to read for
 						each case. If value is 0 then the number
 						of lines for a case is read from the input
-						file. (default 1)
+						file. If value is a function then that
+						function is called with the input, and must
+						return the number of lines. (default 1)
 		
 		caseFormat:		The String.format used when outputting the
 						answer for a case. 0th arg is the case
@@ -156,10 +158,14 @@ var codejam = {};
 				console.log(String.format('Case #{0}: Begin', caseNum));
 			}
 			
-			var caseData = null;
-			if (this.linesPerCase === 0) {
+			var caseData = null,
+				numLines;
+			if (Object.prototype.toString.call(this.linesPerCase) == '[object Function]') {
+				numLines = this.linesPerCase(input);
+				caseData = input.splice(0, numLines);
+			} else if (this.linesPerCase === 0) {
 				// We read the next line to get the number of lines for this case
-				var numLines = parseInt(input.splice(0, 1));
+				numLines = parseInt(input.splice(0, 1));
 				caseData = input.splice(0, numLines);
 			} else {
 				caseData = input.splice(0, this.linesPerCase);
