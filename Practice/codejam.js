@@ -14,6 +14,15 @@ var codejam = {};
 	};
 	
 	var p = Challenge.prototype;
+
+	p.filename = undefined;
+	p.outputToFile = true;
+	p.outputToConsole = false;
+	p.supressConsole = false;
+	p.linesPerCase = 1;
+	p.caseFormat = 'Case #{0}: {1}';
+	p.numCasesFn = undefined;
+	p.inputPreProcessorFn = undefined;
 	
 	/*
 		filename:	The value passed to fs.readFile for the filename.
@@ -38,14 +47,24 @@ var codejam = {};
 						answer for a case. 0th arg is the case
 						number, 1st arg is the answer.
 						(default Case #{0}: {1})
+
+		numCasesFn:		Some cases might not start with the number
+						of cases. This function can be used to get
+						the number of cases from the input.
+
+		inputPreProcessorFn:	Some inputs have some data to be used
+								in each case, this function can collect
+								that data and pass it to each case.
 	*/
 	p.initialise = function initialiseChallenge(config) {
 		this.filename = process.argv[2] || config.filename;
-		this.outputToFile = config.outputToFile || true;
-		this.outputToConsole = config.outputToConsole || false;
-		this.supressConsole = config.supressConsole || false;
-		this.linesPerCase = config.linesPerCase || 1;
-		this.caseFormat = config.caseFormat || 'Case #{0}: {1}';
+		this.outputToFile = config.outputToFile || this.outputToFile;
+		this.outputToConsole = config.outputToConsole || this.outputToConsole;
+		this.supressConsole = config.supressConsole || this.supressConsole;
+		this.linesPerCase = config.linesPerCase || this.linesPerCase;
+		this.caseFormat = config.caseFormat || this.caseFormat;
+		this.numCasesFn = config.numCasesFn;
+		this.inputPreProcessorFn = config.inputPreProcessorFn;
 		
 		if (!this.filename) {
 			// Get filename from stdin (http://stackoverflow.com/a/16048083)
@@ -64,7 +83,7 @@ var codejam = {};
 				throw e;
 			}
 			if (bytesRead !== 0) {
-				this.filename = buf.toString(null, 0, bytesRead).replace(/\r|\n/g, '');
+				this.filename = buf.toString(null, 0, bytesRead);
 			}
 		}
 	};
@@ -73,11 +92,11 @@ var codejam = {};
 		if (!fs.existsSync(filename)) {
 			filename += '.in';
 		}
-		
+
 		if (fs.existsSync(filename)) {
 			return fs.readFileSync(filename).toString().split(/\r?\n/g) || [];
 		}
-		
+
 		console.error('Error', 'No input found');
 		return [];
 	}
@@ -111,8 +130,19 @@ var codejam = {};
 		var input = getInput(this.filename),
 			answers = [];
 		
-		var cases = input.shift() || 0,
-			caseNum = 0;
+		var cases,
+			caseNum = 0,
+			extraData;
+
+		if (this.numCasesFn) {
+			cases = this.numCasesFn(input);
+		} else {
+			cases = input.shift() || 0;
+		}
+
+		if (this.inputPreProcessorFn) {
+			extraData = this.inputPreProcessorFn(input);
+		}
 		
 		if (!this.supressConsole) {
 			console.log('Cases found: ' + cases);
@@ -135,7 +165,7 @@ var codejam = {};
 				caseData = input.splice(0, this.linesPerCase);
 			}
 			
-			answers[caseNum - 1] = caseProcessorFn(caseData);
+			answers[caseNum - 1] = caseProcessorFn(caseData, extraData);
 			var error;
 			if (caseCheckerFn) {
 				error = caseCheckerFn(answers[caseNum - 1], caseData);
@@ -178,13 +208,15 @@ var codejam = {};
 			}
 			console.log('--------------------');
 		}
-		
-		outputAnswers({
-			filename: this.filename,
-			caseFormat: this.caseFormat,
-			outputToFile: this.outputToFile,
-			outputToConsole: this.outputToConsole
-		}, answers);
+
+		if (answers.length > 0) {
+			outputAnswers({
+				filename: this.filename,
+				caseFormat: this.caseFormat,
+				outputToFile: this.outputToFile,
+				outputToConsole: this.outputToConsole
+			}, answers);
+		}
 	};
 	
 	codejam.Challenge = Challenge;
