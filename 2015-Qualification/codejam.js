@@ -63,7 +63,7 @@ var codejam = {};
 		this.outputToFile = config.outputToFile || this.outputToFile;
 		this.outputToConsole = config.outputToConsole || this.outputToConsole;
 		this.supressConsole = config.supressConsole || this.supressConsole;
-		this.linesPerCase = config.linesPerCase !== undefined ? config.linesPerCase : this.linesPerCase;
+		this.linesPerCase = config.linesPerCase || this.linesPerCase;
 		this.caseFormat = config.caseFormat || this.caseFormat;
 		this.numCasesFn = config.numCasesFn;
 		this.inputPreProcessorFn = config.inputPreProcessorFn;
@@ -85,7 +85,7 @@ var codejam = {};
 				throw e;
 			}
 			if (bytesRead !== 0) {
-				this.filename = buf.toString(null, 0, bytesRead).replace(/(\r\n|\n|\r)/gm,'');
+				this.filename = buf.toString(null, 0, bytesRead);
 			}
 		}
 	};
@@ -259,6 +259,7 @@ if (!String.prototype.replaceAt) {
 	}
 }
 
+// Mean
 if (!Math.mean) {
 	Math.mean = function(numbers) {
 		var total = 0;
@@ -271,28 +272,16 @@ if (!Math.mean) {
 	}
 }
 
+// Min
 if (!Array.min) {
 	Array.min = function(array) {
 		return Math.min.apply(null, array);
 	}
 }
 
+// Max
 if (!Array.max) {
 	Array.max = function(array) {
 		return Math.max.apply(null, array);
-	}
-}
-
-if (!Array.prototype.contains) {
-	Array.prototype.contains= function(element) {
-		return this.indexOf(element) !== -1;
-	}
-}
-
-if (!Array.prototype.pushIfNotExists) {
-	Array.prototype.pushIfNotExists = function(element) {
-		if (!this.contains(element)) {
-			return this.push(element);
-		}
 	}
 }
